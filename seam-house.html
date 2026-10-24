@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SH Stitching House — Bespoke Tailoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Archivo:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:       #1C1917;
+    --ink-soft:  #2A2521;
+    --bone:      #EDE3D0;
+    --bone-dim:  #C9BFA9;
+    --thread:    #9C3B3B;
+    --thread-lt: #C25050;
+    --brass:     #B8935A;
+    --grey:      #8A8377;
+    --line:      rgba(237,227,208,0.14);
+    --radius:    2px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--bone);
+    font-family:'Archivo',sans-serif;
+    font-weight:400;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--thread);color:var(--bone);}
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;letter-spacing:-0.01em;}
+  .container{max-width:1180px;margin:0 auto;padding:0 6vw;}
+
+  /* running-stitch divider */
+  .stitch-line{width:100%;height:14px;overflow:visible;}
+  .stitch-line path{
+    fill:none;
+    stroke:var(--thread);
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-dasharray:9 10;
+    stroke-dashoffset:400;
+    transition:stroke-dashoffset 1.4s cubic-bezier(.4,.7,.3,1);
+  }
+  .stitch-line.in-view path{stroke-dashoffset:0;}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(28,25,23,0.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.container{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:1.1rem;padding-bottom:1.1rem;
+  }
+  .brand{font-family:'Fraunces',serif;font-size:1.25rem;letter-spacing:0.02em;font-weight:600;}
+  .brand span{color:var(--thread);}
+  .nav-links{display:flex;gap:2.2rem;font-size:0.88rem;}
+  .nav-links a{position:relative;padding-bottom:4px;}
+  .nav-links a::after{
+    content:'';position:absolute;left:0;bottom:0;width:100%;height:2px;
+    background-image:linear-gradient(to right, var(--thread) 55%, transparent 0%);
+    background-size:9px 2px;background-repeat:repeat-x;
+    transform:scaleX(0);transform-origin:left;transition:transform 0.35s ease;
+  }
+  .nav-links a:hover::after,.nav-links a:focus-visible::after{transform:scaleX(1);}
+  .nav-cta{
+    font-family:'Space Mono',monospace;font-size:0.76rem;letter-spacing:0.05em;
+    border:1px solid var(--brass);padding:0.55rem 1.1rem;border-radius:var(--radius);
+    color:var(--brass);transition:background 0.25s ease,color 0.25s ease;
+  }
+  .nav-cta:hover{background:var(--brass);color:var(--ink);}
+  .menu-btn{display:none;background:none;border:none;color:var(--bone);font-size:1.4rem;cursor:pointer;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    position:relative;padding-top:6rem;
+    background:
+      radial-gradient(ellipse at 80% 10%, rgba(156,59,59,0.14), transparent 55%),
+      radial-gradient(ellipse at 10% 90%, rgba(184,147,90,0.10), transparent 50%),
+      var(--ink);
+  }
+  .hero .container{position:relative;z-index:2;}
+  .hero .eyebrow{margin-bottom:1.4rem;}
+  .hero h1{
+    font-size:clamp(2.6rem,6.4vw,5.2rem);
+    max-width:14ch;
+    color:var(--bone);
+  }
+  .hero h1 em{font-style:italic;color:var(--thread-lt);font-weight:400;}
+  .hero p.lede{
+    max-width:46ch;margin-top:1.6rem;font-size:1.08rem;color:var(--bone-dim);
+  }
+  .hero-cta{display:flex;gap:1rem;margin-top:2.6rem;flex-wrap:wrap;}
+  .btn{
+    font-family:'Space Mono',monospace;font-size:0.82rem;letter-spacing:0.04em;
+    padding:0.9rem 1.6rem;border-radius:var(--radius);cursor:pointer;
+    transition:transform 0.25s ease,background 0.25s ease,color 0.25s ease;
+    display:inline-block;
+  }
+  .btn-primary{background:var(--thread);color:var(--bone);border:1px solid var(--thread);}
+  .btn-primary:hover{background:var(--thread-lt);transform:translateY(-2px);}
+  .btn-ghost{border:1px solid var(--line);color:var(--bone);}
+  .btn-ghost:hover{border-color:var(--brass);color:var(--brass);transform:translateY(-2px);}
+
+  .tape{
+    position:absolute;right:6vw;top:7.5rem;bottom:3rem;width:70px;
+    display:flex;flex-direction:column;align-items:center;
+    opacity:0.55;
+  }
+  .tape svg{height:100%;width:100%;}
+  @media (max-width:900px){.tape{display:none;}}
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{padding:7.5rem 0 5rem;}
+  .section-head{max-width:640px;margin-bottom:3.5rem;}
+  .section-head h2{font-size:clamp(1.9rem,3.6vw,2.7rem);margin-top:0.6rem;}
+  .section-head p{color:var(--bone-dim);margin-top:1rem;max-width:52ch;}
+
+  /* ---------- SERVICES ---------- */
+  .services-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);
+  }
+  .service-card{
+    background:var(--ink);padding:2.4rem 1.8rem;
+    transition:background 0.3s ease;
+  }
+  .service-card:hover{background:var(--ink-soft);}
+  .service-card .mark{
+    font-family:'Space Mono',monospace;color:var(--thread);font-size:0.85rem;
+  }
+  .service-card h3{font-size:1.25rem;margin-top:1rem;font-weight:500;}
+  .service-card p{color:var(--bone-dim);font-size:0.92rem;margin-top:0.7rem;}
+  @media (max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.services-grid{grid-template-columns:1fr;}}
+
+  /* ---------- PORTFOLIO ---------- */
+  .portfolio-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;
+  }
+  .garment-card{
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    background:var(--ink-soft);
+  }
+  .garment-figure{
+    aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;
+    padding:2rem;position:relative;
+  }
+  .garment-figure svg{width:100%;height:100%;}
+  .garment-info{padding:1.2rem 1.4rem 1.6rem;border-top:1px solid var(--line);}
+  .garment-info h3{font-size:1.05rem;font-weight:500;}
+  .garment-info .eyebrow{margin-top:0.35rem;}
+  @media (max-width:900px){.portfolio-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.portfolio-grid{grid-template-columns:1fr;}}
+
+  /* ---------- SUIT TYPES (plain, no card design) ---------- */
+  .suit-types-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;
+  }
+  .suit-type-item{text-align:center;}
+  .suit-type-item a{display:block;}
+  .suit-type-item img{width:100%;height:340px;object-fit:cover;display:block;border-radius:var(--radius);}
+  .suit-type-item p{margin-top:0.5rem;font-size:0.85rem;}
+  @media (max-width:1080px){.suit-types-grid{grid-template-columns:repeat(4,1fr);}}
+  @media (max-width:640px){.suit-types-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:420px){.suit-types-grid{grid-template-columns:1fr;}}
+
+  /* ---------- PROCESS ---------- */
+  .process{position:relative;}
+  .process-thread{position:relative;padding-left:0;}
+  .process-steps{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:1.2rem;position:relative;
+  }
+  .process-steps::before{
+    content:'';position:absolute;top:22px;left:0;right:0;height:2px;
+    background-image:linear-gradient(to right, var(--brass) 60%, transparent 0%);
+    background-size:11px 2px;background-repeat:repeat-x;
+  }
+  .step{position:relative;padding-top:3.6rem;}
+  .step .num{
+    position:absolute;top:0;left:0;width:44px;height:44px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--brass);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--brass);
+  }
+  .step h3{font-size:1.02rem;font-weight:500;margin-bottom:0.4rem;}
+  .step p{font-size:0.85rem;color:var(--bone-dim);}
+  @media (max-width:900px){
+    .process-steps{grid-template-columns:repeat(2,1fr);row-gap:2.4rem;}
+    .process-steps::before{display:none;}
+  }
+
+  /* ---------- TESTIMONIALS ---------- */
+  .testimonials{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;
+  }
+  .quote{
+    border-left:2px solid var(--thread);padding-left:1.4rem;
+  }
+  .quote p{font-family:'Fraunces',serif;font-style:italic;font-size:1.08rem;color:var(--bone);}
+  .quote .who{margin-top:1rem;}
+  @media (max-width:900px){.testimonials{grid-template-columns:1fr;gap:2.2rem;}}
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  .contact{
+    background:var(--ink-soft);border-top:1px solid var(--line);
+  }
+  .contact-grid{
+    display:grid;grid-template-columns:1.2fr 1fr;gap:3rem;align-items:start;
+  }
+  .contact h2{font-size:clamp(1.9rem,3.6vw,2.6rem);max-width:14ch;}
+  .contact p.lede{color:var(--bone-dim);margin-top:1rem;max-width:44ch;}
+  .info-list{margin-top:2rem;display:flex;flex-direction:column;gap:0.9rem;}
+  .info-list div{display:flex;gap:0.8rem;font-size:0.92rem;}
+  .info-list .eyebrow{min-width:90px;}
+  form{display:flex;flex-direction:column;gap:1.1rem;}
+  label{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--brass);margin-bottom:0.4rem;display:block;}
+  input,textarea{
+    width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);
+    color:var(--bone);font-family:'Archivo',sans-serif;font-size:0.95rem;padding:0.6rem 0.1rem;
+  }
+  input:focus,textarea:focus{outline:none;border-bottom-color:var(--brass);}
+  textarea{resize:vertical;min-height:70px;}
+  form .btn-primary{align-self:flex-start;margin-top:0.5rem;border:none;cursor:pointer;}
+
+  footer{
+    padding:2.4rem 0;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+  }
+  footer .eyebrow{opacity:0.8;}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity 0.7s ease,transform 0.7s ease;}
+  .reveal.in-view{opacity:1;transform:translateY(0);}
+
+  @media (max-width:900px){
+    .nav-links,.nav-cta{display:none;}
+    .menu-btn{display:block;}
+    .contact-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="container">
+    <a href="#top" class="brand">SH <span>Stitching House</span></a>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#suit-types">Suit Types</a>
+      <a href="#process">Process</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="#contact" class="nav-cta">Book a fitting</a>
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<section class="hero" id="top">
+  <div class="tape" aria-hidden="true">
+    <svg viewBox="0 0 60 400" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="0" x2="30" y2="400" stroke="#8A8377" stroke-width="1"/>
+      <g stroke="#C9BFA9" stroke-width="1">
+        <line x1="15" y1="0" x2="45" y2="0"/><line x1="20" y1="20" x2="40" y2="20"/>
+        <line x1="15" y1="40" x2="45" y2="40"/><line x1="20" y1="60" x2="40" y2="60"/>
+        <line x1="15" y1="80" x2="45" y2="80"/><line x1="20" y1="100" x2="40" y2="100"/>
+        <line x1="15" y1="120" x2="45" y2="120"/><line x1="20" y1="140" x2="40" y2="140"/>
+        <line x1="15" y1="160" x2="45" y2="160"/><line x1="20" y1="180" x2="40" y2="180"/>
+        <line x1="15" y1="200" x2="45" y2="200"/><line x1="20" y1="220" x2="40" y2="220"/>
+        <line x1="15" y1="240" x2="45" y2="240"/><line x1="20" y1="260" x2="40" y2="260"/>
+        <line x1="15" y1="280" x2="45" y2="280"/><line x1="20" y1="300" x2="40" y2="300"/>
+        <line x1="15" y1="320" x2="45" y2="320"/><line x1="20" y1="340" x2="40" y2="340"/>
+        <line x1="15" y1="360" x2="45" y2="360"/><line x1="20" y1="380" x2="40" y2="380"/>
+      </g>
+    </svg>
+  </div>
+  <div class="container">
+    <div class="eyebrow">Bespoke tailoring — est. 2012</div>
+    <h1>Every garment begins with <em>a single stitch.</em></h1>
+    <p class="lede">SH Stitching House is a small tailoring atelier building suits, gowns, and outerwear by hand — pattern-cut to your body, finished stitch by stitch, meant to outlast the trend that brought you in.</p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn btn-primary">Book a fitting</a>
+      <a href="#portfolio" class="btn btn-ghost">View the work</a>
+    </div>
+  </div>
+</section>
+
+<svg class="stitch-line container" viewBox="0 0 1180 14" preserveAspectRatio="none"><path d="M0,7 L1180,7"/></svg>
+
+<section id="services">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">What we cut</div>
+      <h2>Four disciplines, one workbench.</h2>
+      <p>Every piece that leaves the shop passes through the same hands that measured it.</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="mark">01</div>
+        <h3>Bespoke Suits</h3>
+        <p>Fully canvassed, hand-padded, built around how you actually move — not how a mannequin stands.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">02</div>
+        <h3>Wedding &amp; Occasion</h3>
+        <p>Gowns and suits for the one day worth over-engineering. Fittings scheduled around your timeline.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">03</div>
+        <h3>Alterations &amp; Repairs</h3>
+        <p>The quiet work that makes something off-the-rack sit like it was cut for you.</p>
+      </div>
+      <div class="service-card">
+        <div class="mark">04</div>
+        <h3>Corporate &amp; Uniform</h3>
+        <p>Consistent fit across a whole team, one pattern block and one set of notes at a time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">Recent work</div>
+      <h2>From the cutting table.</h2>
+      <p>A handful of pieces from the last few seasons — each one drafted, cut, and finished in-house.</p>
+    </div>
+    <div class="portfolio-grid">
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60,30 L85,20 L100,35 L115,20 L140,30 L150,60 L135,70 L135,210 L65,210 L65,70 L50,60 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M100,35 L92,60 L100,80 L108,60 Z" fill="none" stroke="#C25050" stroke-width="1.6"/>
+            <path d="M65,70 L65,210 M135,70 L135,210" stroke="#B8935A" stroke-width="1.4" stroke-dasharray="4 5"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Charcoal Wool Suit</h3>
+          <div class="eyebrow">Two-piece · fully canvassed</div>
+        </div>
+      </div>
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M85,25 Q100,15 115,25 L120,55 L145,225 L55,225 L80,55 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M100,25 L100,225" stroke="#B8935A" stroke-width="1.2" stroke-dasharray="4 5"/>
+            <path d="M80,55 L120,55" stroke="#C25050" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Silk Evening Gown</h3>
+          <div class="eyebrow">Bias cut · hand-hemmed</div>
+        </div>
+      </div>
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M55,35 L85,22 L100,38 L115,22 L145,35 L158,75 L140,85 L140,225 L60,225 L60,85 L42,75 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M100,38 L88,70 L100,95 L112,70 Z" fill="none" stroke="#C25050" stroke-width="1.6"/>
+            <path d="M60,110 L140,110 M60,150 L140,150" stroke="#B8935A" stroke-width="1.2" stroke-dasharray="4 5"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Herringbone Overcoat</h3>
+          <div class="eyebrow">Single-breasted · wool blend</div>
+        </div>
+      </div>
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M65,30 L90,22 L100,32 L110,22 L135,30 L142,55 L128,62 L128,205 L72,205 L72,62 L58,55 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M72,62 L128,62" stroke="#C25050" stroke-width="1.6"/>
+            <path d="M85,80 L85,195 M115,80 L115,195" stroke="#B8935A" stroke-width="1" stroke-dasharray="3 4"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Linen Summer Suit</h3>
+          <div class="eyebrow">Unstructured · half-canvas</div>
+        </div>
+      </div>
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M70,28 Q100,18 130,28 L128,60 L150,215 L50,215 L72,60 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M100,28 L100,215" stroke="#B8935A" stroke-width="1" stroke-dasharray="3 4"/>
+            <path d="M72,60 L128,60" stroke="#C25050" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Tailored Shirt Dress</h3>
+          <div class="eyebrow">Cotton poplin · yoke-back</div>
+        </div>
+      </div>
+
+      <div class="garment-card reveal">
+        <div class="garment-figure">
+          <svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+            <path d="M55,40 L88,25 L100,40 L112,25 L145,40 L155,80 L138,88 L138,220 L62,220 L62,88 L45,80 Z"
+              fill="none" stroke="#EDE3D0" stroke-width="2"/>
+            <path d="M100,40 L86,75 L100,100 L114,75 Z" fill="none" stroke="#C25050" stroke-width="1.6"/>
+            <path d="M62,130 L138,130" stroke="#B8935A" stroke-width="1.2" stroke-dasharray="4 5"/>
+          </svg>
+        </div>
+        <div class="garment-info">
+          <h3>Navy Peak-Lapel Blazer</h3>
+          <div class="eyebrow">Double-breasted · silk lining</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<svg class="stitch-line container" viewBox="0 0 1180 14" preserveAspectRatio="none"><path d="M0,7 L1180,7"/></svg>
+
+<section id="suit-types">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">The pattern library</div>
+      <h2>20 Pakistani ladies' suit styles we cut.</h2>
+      <p>Every silhouette below can be drafted from scratch and built in the cloth, embroidery, and finish of your choosing.</p>
+    </div>
+    <div class="suit-types-grid reveal">
+
+      <div class="suit-type-item"><a href="#contact"><img src="images/img1.jpg" alt="Shalwar Kameez" loading="lazy"></a><p>Shalwar Kameez</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img2.webp" alt="Anarkali Suit" loading="lazy"></a><p>Anarkali Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img3.jpg" alt="Sharara Suit" loading="lazy"></a><p>Sharara Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img4.jpg" alt="Gharara Suit" loading="lazy"></a><p>Gharara Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img5.jpg" alt="Palazzo Suit" loading="lazy"></a><p>Palazzo Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img6.webp" alt="Angrakha Suit" loading="lazy"></a><p>Angrakha Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img7.jpg" alt="Kurti Suit" loading="lazy"></a><p>Kurti Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img8.jpg" alt="Farshi Shalwar" loading="lazy"></a><p>Farshi Shalwar</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img9.jpg" alt="Dhoti Shalwar" loading="lazy"></a><p>Dhoti Shalwar</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img10.jpg" alt="Cigarette Pants Suit" loading="lazy"></a><p>Cigarette Pants Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img11.jpg" alt="Trouser Suit" loading="lazy"></a><p>Trouser Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img12.jpg" alt="Frock-Style Suit" loading="lazy"></a><p>Frock-Style Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img13.jpg" alt="Peplum Suit" loading="lazy"></a><p>Peplum Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img14.jpg" alt="Straight Suit" loading="lazy"></a><p>Straight Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img15.jpg" alt="A-Line Suit" loading="lazy"></a><p>A-Line Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img16.jpg" alt="Patiala Suit" loading="lazy"></a><p>Patiala Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img17.jpg" alt="Jamawar Suit" loading="lazy"></a><p>Jamawar Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img18.jpg" alt="Chikankari Suit" loading="lazy"></a><p>Chikankari Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img19.jpg" alt="Organza Suit" loading="lazy"></a><p>Organza Suit</p></div>
+      <div class="suit-type-item"><a href="#contact"><img src="images/img20.jpg" alt="Lehenga Choli" loading="lazy"></a><p>Lehenga Choli</p></div>
+
+    </div>
+  </div>
+</section>
+
+<svg class="stitch-line container" viewBox="0 0 1180 14" preserveAspectRatio="none"><path d="M0,7 L1180,7"/></svg>
+
+<section id="process">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">How a garment gets made</div>
+      <h2>Six stages, one thread.</h2>
+    </div>
+    <div class="process-steps reveal">
+      <div class="step"><div class="num">01</div><h3>Consultation</h3><p>We talk fabric, occasion, and how the piece needs to live in your closet.</p></div>
+      <div class="step"><div class="num">02</div><h3>Measurement</h3><p>Upward of thirty points taken by hand, recorded against your posture, not a chart.</p></div>
+      <div class="step"><div class="num">03</div><h3>Pattern &amp; Cut</h3><p>A block is drafted from scratch, then cut from your chosen cloth on the table.</p></div>
+      <div class="step"><div class="num">04</div><h3>First Fitting</h3><p>Basted together, tried on, marked up — this is where the real fit gets found.</p></div>
+      <div class="step"><div class="num">05</div><h3>Hand Finishing</h3><p>Buttonholes, canvas, and hems finished by needle, not machine.</p></div>
+      <div class="step"><div class="num">06</div><h3>Delivery</h3><p>A final press, a final look, and a garment that's genuinely yours.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow">From the fitting room</div>
+      <h2>Word of mouth, mostly.</h2>
+    </div>
+    <div class="testimonials reveal">
+      <div class="quote">
+        <p>"First suit I've owned that didn't need breaking in. It fit on day one."</p>
+        <div class="eyebrow who">— R.M., bespoke suit</div>
+      </div>
+      <div class="quote">
+        <p>"They rebuilt my grandmother's coat instead of talking me into a new one. It's better than new now."</p>
+        <div class="eyebrow who">— A.K., alterations</div>
+      </div>
+      <div class="quote">
+        <p>"Fitted our whole front-of-house team in the same week. Every jacket sits the same way."</p>
+        <div class="eyebrow who">— T.O., corporate uniform</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal">
+        <div class="eyebrow">Get in touch</div>
+        <h2>Let's put a tape measure on it.</h2>
+        <p class="lede">First consultations run about 45 minutes and are unhurried on purpose. Bring reference photos, fabric in mind, or nothing at all.</p>
+        <div class="info-list">
+          <div><span class="eyebrow">Hours</span><span>Tue–Sat, 10:00–18:00, by appointment</span></div>
+          <div><span class="eyebrow">Email</span><span>h19490488@gmail.com</span></div>
+        </div>
+      </div>
+      <form class="reveal" onsubmit="event.preventDefault(); this.querySelector('.btn-primary').textContent='Sent — we\'ll reply within a day';">
+        <div>
+          <label for="name">Name</label>
+          <input id="name" type="text" required>
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" required>
+        </div>
+        <div>
+          <label for="msg">What are you looking to have made?</label>
+          <textarea id="msg" required></textarea>
+        </div>
+        <button class="btn btn-primary">Request a fitting</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="container">
+  <div class="eyebrow">© 2026 SH Stitching House</div>
+  <div class="eyebrow">Cut once. Fit forever.</div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in-view'); });
+  }, {threshold:0.2});
+  document.querySelectorAll('.reveal, .stitch-line').forEach(el=>io.observe(el));
+
+  const menuBtn = document.querySelector('.menu-btn');
+  const navLinks = document.querySelector('.nav-links');
+  menuBtn.addEventListener('click', ()=>{
+    const open = navLinks.style.display === 'flex';
+    navLinks.style.cssText = open ? '' : 'display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#1C1917;padding:1.5rem 6vw;gap:1.2rem;border-bottom:1px solid var(--line);';
+  });
+</script>
+
+</body>
+</html>
